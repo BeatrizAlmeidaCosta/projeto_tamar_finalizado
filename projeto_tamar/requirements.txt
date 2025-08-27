@@ -1,6 +1,8 @@
-Flask
-flask-cors
-Flask-SQLAlchemy
-gunicorn
-openpyxl
-pandas
+Flask==2.3.3
+Flask-Cors==3.1.0
+Flask-SQLAlchemy==3.0.5
+gunicorn==21.2.0
+openpyxl==3.1.2
+pandas==2.1.0
+
+
