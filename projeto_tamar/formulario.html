@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prontuário Digital – Projeto Tamar</title>
+  <style>
+    :root { font-family: Arial, sans-serif; }
+    body { margin:0; padding:0; background:#f3f6f9; }
+    nav { display:flex; background:#004d40; }
+    nav button { flex:1; padding:12px; border:none; background:#004d40; color:#fff; cursor:pointer; font-weight:600; transition:background-color 0.3s; font-size:1rem; }
+    nav button.active, nav button:hover { background:#00796b; }
+    section { display:none; padding:20px; }
+    section.active { display:block; }
+    fieldset { border:1px solid #00796b; margin-bottom:20px; padding:15px; border-radius:6px; }
+    legend { padding:0 6px; font-weight:600; color:#00796b; }
+    label { display:block; margin:6px 0 2px; font-size:0.9rem; }
+    input, select, textarea { width:100%; padding:6px; border:1px solid #ccc; border-radius:4px; font-size:1rem; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td { border:1px solid #bbb; padding:6px; text-align:center; font-size:0.9rem; }
+    .add-row { margin-top:8px; background-color:#00796b; color:white; border:none; padding:8px 14px; border-radius:5px; cursor:pointer; font-weight:600; transition: background-color 0.3s; }
+    .add-row:hover { background-color:#004d40; }
+    .footer-buttons { margin:15px 10px; display:flex; gap:12px; flex-wrap:wrap; }
+    .footer-buttons button { background-color:#00796b; border:none; color:#fff; font-weight:600; padding:10px 18px; border-radius:8px; cursor:pointer; font-size:1rem; display:flex; align-items:center; gap:8px; transition:background-color 0.3s; }
+    .footer-buttons button:hover { background-color:#004d40; }
+    .footer-buttons button .icon { font-size:1.2rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <button class="tab active" data-show="identificacao">Identificação</button>
+    <button class="tab" data-show="entrada">Entrada / Tratamento</button>
+    <button class="tab" data-show="agua">Parâmetros da Água</button>
+  </nav>
+
+  <!-- 1. Identificação -->
+  <section id="identificacao" class="active">
+    <fieldset>
+      <legend>Ficha de Identificação Individual</legend>
+      <div class="two-col">
+        <div>
+          <label>Espécie</label><input type="text" name="especie" />
+          <label>Sexo</label>
+          <select name="sexo">
+            <option>Indeterminado</option>
+            <option>Fêmea</option>
+            <option>Macho</option>
+          </select>
+          <label>Origem</label><input type="text" name="origem" />
+          <label>Data/Nasc.</label><input type="text" name="nascimento" />
+        </div>
+        <div>
+          <label>Nome</label><input type="text" name="nome" />
+          <label>Microchip</label><input type="text" name="microchip" />
+          <label>Anilhas</label><input type="text" name="anilhas" />
+          <label>Data de entrada</label><input type="date" name="data_entrada" />
+        </div>
+      </div>
+      <label>Observações</label>
+      <textarea rows="3" name="observacoes"></textarea>
+    </fieldset>
+  </section>
+
+  <!-- 2. Entrada / Tratamento -->
+  <section id="entrada">
+    <fieldset>
+      <legend>Dados de Entrada</legend>
+      <div class="two-col">
+        <div>
+          <label>Data</label><input type="date" name="dt_entrada" />
+          <label>Hora</label><input type="time" name="hr_entrada" />
+          <label>Nº TT Tamar</label><input type="text" name="tt_tamar" />
+          <label>Nº Recinto</label><input type="text" name="recinto" />
+        </div>
+        <div>
+          <label>Procedência</label><input type="text" name="procedencia" />
+          <label>Forma de Resgate</label>
+          <select name="forma">
+            <option>Encalhe</option>
+            <option>Boiando</option>
+            <option>Pesca</option>
+            <option>Captura intencional</option>
+          </select>
+          <label>Espécie</label><input type="text" name="esp_entrada" />
+        </div>
+      </div>
+      <div class="two-col">
+        <div>
+          <label>CCC (cm)</label><input type="number" step="0.1" name="ccc" />
+          <label>LCC (cm)</label><input type="number" step="0.1" name="lcc" />
+          <label>CT (cm)</label><input type="number" step="0.1" name="ct" />
+          <label>Peso (kg)</label><input type="number" step="0.1" name="peso" />
+        </div>
+        <div>
+          <label>Marcas encontradas</label><input type="text" name="marcas_encontradas" />
+          <label>Marcas colocadas</label><input type="text" name="marcas_colocadas" />
+        </div>
+      </div>
+      <label>Histórico</label><textarea rows="2" name="historico"></textarea>
+      <label>Anamnese</label><textarea rows="2" name="anamnese"></textarea>
+    </fieldset>
+
+    <fieldset>
+      <legend>Exame Clínico / Reflexos</legend>
+      <div class="two-col">
+        <div>
+          <label>Reflexo pupilar</label><select name="ref_pupilar"><option>Sim</option><option>Não</option></select>
+          <label>Reflexo palpebral</label><select name="ref_palpebral"><option>Sim</option><option>Não</option></select>
+          <label>Reflexo corneal</label><select name="ref_corneal"><option>Sim</option><option>Não</option></select>
+          <label>Reflexo doloroso</label><select name="ref_doloroso"><option>Sim</option><option>Não</option></select>
+        </div>
+        <div>
+          <label>Grau de hidratação</label><select name="hidratacao">
+            <option>Extremamente Desidratada</option>
+            <option>Desidratada</option>
+            <option>Normo hidratada</option>
+          </select>
+          <label>Coloração de mucosas</label><select name="mucosas">
+            <option>Hipocorada</option>
+            <option>Normocorada</option>
+            <option>Congesta</option>
+            <option>Cianótica</option>
+            <option>Ictérica</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Parâmetros e Procedimentos</legend>
+      <div class="two-col">
+        <div>
+          <label>Hematócrito (%)</label><input type="number" step="0.1" name="hematocrito" />
+          <label>PPT (g/dL)</label><input type="number" step="0.1" name="ppt" />
+          <label>Glicemia (mg/dL)</label><input type="number" name="glicemia" />
+        </div>
+        <div>
+          <label>FC (bpm)</label><input type="number" name="fc" />
+          <label>FR (irpm)</label><input type="number" name="fr" />
+          <label>Suspeita Diagnóstica</label><input type="text" name="suspeita" />
+        </div>
+      </div>
+
+      <h4>Procedimentos</h4>
+      <table id="procTable">
+        <thead><tr><th>Data</th><th>Hora</th><th>Procedimento</th><th>Responsável</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" class="add-row" onclick="addProcRow()">Adicionar linha</button>
+
+      <label>Procedimentos médicos detalhados</label>
+      <textarea rows="3" name="proced_medicos"></textarea>
+      <label>Upload de exames (PDF)</label>
+      <input type="file" accept="application/pdf" name="exames_pdf" />
+    </fieldset>
+  </section>
+
+  <!-- 3. Parâmetros da água -->
+  <section id="agua">
+    <fieldset>
+      <legend>Qualidade da Água</legend>
+      <p>Use a tabela abaixo para registrar as leituras de cada recinto ou aquário.</p>
+      <table id="aguaTable">
+        <thead><tr>
+          <th>Data</th><th>Recinto</th><th>Temp (°C)</th><th>pH</th><th>Amônia</th><th>Salinidade</th><th>Cloro</th><th>Nitrito</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" class="add-row" onclick="addAguaRow()">Adicionar linha</button>
+    </fieldset>
+  </section>
+
+  <div class="footer-buttons">
+    <button onclick="location.href='index.html'">← Voltar ao Início</button>
+    <button onclick="salvarProntuario()"><span class="icon">💾</span> Salvar Prontuário</button>
+    <button onclick="location.href='dados.html'">Verificar os Prontuários Salvos ➞</button>
+  </div>
+
+  <script>
+    const API_URL = window.location.origin + "/api/prontuarios";
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+        document.getElementById(btn.dataset.show).classList.add('active');
+      };
+    });
+
+    function addProcRow() {
+      const tbody = document.getElementById('procTable').querySelector('tbody');
+      const row = tbody.insertRow();
+      ['date','time','text','text'].forEach((type,i)=>{
+        const cell=row.insertCell();
+        const input=document.createElement('input');
+        input.type=type;
+        if(i==2) input.style.width='100%';
+        cell.appendChild(input);
+      });
+    }
+
+    function addAguaRow() {
+      const tbody = document.getElementById('aguaTable').querySelector('tbody');
+      const row = tbody.insertRow();
+      ['date','text','number','number','number','number','number','number'].forEach(type=>{
+        const cell=row.insertCell();
+        const input=document.createElement('input');
+        input.type=type;
+        cell.appendChild(input);
+      });
+    }
+
+    async function salvarProntuario() {
+      const dados = {};
+      document.querySelectorAll("input, select, textarea").forEach(el=>{
+        if(el.name && el.type!=='file') dados[el.name]=el.value;
+      });
+
+      const tabelaJSON = id=>{
+        const rows=[];
+        document.querySelectorAll(`#${id} tbody tr`).forEach(tr=>{
+          rows.push(Array.from(tr.querySelectorAll('input')).map(i=>i.value));
+        });
+        return JSON.stringify(rows);
+      };
+
+      dados.procedimentos = tabelaJSON('procTable');
+      dados.parametrosAgua = tabelaJSON('aguaTable');
+
+      const file = document.querySelector('input[name="exames_pdf"]').files[0];
+      if(file){
+        const reader = new FileReader();
+        reader.onload = async ()=>{
+          dados.pdf = reader.result;
+          await enviarParaAPI(dados);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        await enviarParaAPI(dados);
+      }
+    }
+
+    async function enviarParaAPI(dados){
+      try{
+        const res = await fetch(API_URL,{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify(dados)
+        });
+        if(res.ok){
+          alert("✅ Prontuário salvo com sucesso!");
+          location.reload();
+        } else { alert("Erro ao salvar o prontuário!"); }
+      } catch(err){ alert("Erro de conexão com o servidor."); console.error(err); }
+    }
+  </script>
+</body>
+</html>

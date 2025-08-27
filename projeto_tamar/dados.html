@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Prontuário Tamar – Compartilhado</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { font-family:"Segoe UI", Arial, sans-serif; background-color:#f3f6f9; color:#00695c; padding:20px; line-height:1.6; }
+    h1,h2 { color:#fff; text-align:center; background-color:#00695c; padding:10px; border-radius:5px; }
+    button { background-color:#0a8879; color:white; border:none; padding:10px 18px; font-size:1em; border-radius:6px; cursor:pointer; transition:background 0.3s; margin:5px; }
+    button:hover { background-color:#00695c; }
+    input[type="text"] { padding:8px; border:1px solid #00695c; border-radius:5px; width:300px; margin-bottom:15px; }
+    #lista > div { background-color:#fff; border-radius:8px; padding:12px; margin-top:12px; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+    a { color:#00695c; text-decoration:none; font-weight:bold; }
+    a:hover { text-decoration:underline; }
+    .detalhes { background-color:#f3f6f9; padding:10px; border-radius:5px; font-size:0.9em; margin-top:5px; }
+  </style>
+</head>
+<body>
+  <h1>Prontuário Digital – Projeto Tamar</h1>
+  <button onclick="location.href='index.html'"><i class="fa-solid fa-arrow-left"></i> Voltar ao Início</button>
+
+  <div>
+    <label for="filtro">Filtrar por espécie, nome, ID, etc:</label>
+    <input type="text" id="filtro" placeholder="Digite uma espécie, ID, nome..." oninput="listarProntuarios()">
+  </div>
+
+  <h2>Registros Salvos</h2>
+  <div id="lista"></div>
+
+  <button onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    const API_URL = "http://127.0.0.1:5000/api/prontuarios"; // Ajuste para seu IP se for acessar pelo celular
+
+    async function listarProntuarios() {
+      const filtro = document.getElementById("filtro").value.toLowerCase();
+      try {
+        const res = await fetch(API_URL);
+        const dados = await res.json();
+        const lista = document.getElementById("lista");
+        lista.innerHTML = "";
+
+        dados.forEach(p => {
+          const idStr = (p.id || '').toString();
+          const nome = (p.nome || '').toLowerCase();
+          const especie = (p.especie || '').toLowerCase();
+          const dataStr = (p.data_entrada || '').toLowerCase();
+
+          if (filtro && !idStr.includes(filtro) && !nome.includes(filtro) && !especie.includes(filtro) && !dataStr.includes(filtro)) return;
+
+          const div = document.createElement("div");
+
+          let pdfBtn = '';
+          if(p.pdf){
+            pdfBtn = `<button onclick="baixarPDF('${p.pdf}','prontuario_${p.id}.pdf')"><i class="fa-solid fa-file-arrow-down"></i> Baixar PDF</button>`;
+          }
+
+          div.innerHTML = `
+            <b>ID: ${p.id}</b><br>
+            <b>${p.nome || '(Sem nome)'}</b><br>
+            Espécie: ${p.especie || ''} &nbsp;|&nbsp; Sexo: ${p.sexo || ''}<br>
+            <small>Salvo em: ${new Date(p.timestamp).toLocaleString()}</small><br>
+            ${pdfBtn}
+            <button onclick="verDetalhes(this)"><i class="fa-solid fa-eye"></i> Ver detalhes</button>
+            <button onclick="excluirProntuario(${p.id})"><i class="fa-solid fa-trash"></i> Excluir</button>
+            <div class="detalhes" style="display:none;"></div>
+          `;
+          div.querySelector('button').prontuario = p;
+          lista.appendChild(div);
+        });
+
+      } catch(err){
+        alert("Erro ao buscar dados do servidor.");
+        console.error(err);
+      }
+    }
+
+    function baixarPDF(base64,nomeArquivo){
+      const link=document.createElement('a');
+      link.href=base64;
+      link.download=nomeArquivo;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function verDetalhes(btn){
+      const dados = btn.prontuario;
+      const box = btn.parentElement.querySelector('.detalhes');
+      if(box.style.display==='none'){
+        let html='';
+        for(let key in dados){
+          if(!['pdf','timestamp','procedimentos','parametrosAgua'].includes(key)){
+            html += `<b>${key}:</b> ${dados[key] || ''}<br>`;
+          }
+        }
+        if(dados.procedimentos){
+          try{
+            const linhas = JSON.parse(dados.procedimentos);
+            html += '<hr><b>Procedimentos:</b><br>';
+            linhas.forEach(l=>{
+              html += `🗓 ${l[0]} ⏰ ${l[1]} – ${l[2]} (${l[3]})<br>`;
+            });
+          } catch{}
+        }
+        if(dados.parametrosAgua){
+          try{
+            const linhas = JSON.parse(dados.parametrosAgua);
+            html += '<hr><b>Parâmetros da Água:</b><br>';
+            linhas.forEach(l=>{
+              html += `🗓 ${l[0]} – Recinto: ${l[1]} – Temp: ${l[2]}°C – pH: ${l[3]} – Amônia: ${l[4]} – Sal: ${l[5]}<br>`;
+            });
+          } catch{}
+        }
+        box.innerHTML = html;
+        box.style.display='block';
+        btn.innerHTML='<i class="fa-solid fa-eye-slash"></i> Ocultar detalhes';
+      } else {
+        box.style.display='none';
+        btn.innerHTML='<i class="fa-solid fa-eye"></i> Ver detalhes';
+      }
+    }
+
+    async function excluirProntuario(id){
+      if(!confirm("Tem certeza que deseja excluir este prontuário?")) return;
+      try{
+        const res = await fetch(`${API_URL}/${id}`,{ method:'DELETE' });
+        if(res.ok){
+          alert("Prontuário excluído com sucesso!");
+          listarProntuarios();
+        } else alert("Erro ao excluir.");
+      } catch(err){ alert("Erro de conexão."); console.error(err); }
+    }
+
+    function exportarExcel(){
+  fetch(API_URL)
+    .then(res=>res.json())
+    .then(dados=>{
+      // Inclui todos os campos do formulário
+      const linhas = dados.map(p=>{
+        return {
+          "ID": p.id,
+          "Nome": p.nome || "",
+          "Espécie": p.especie || "",
+          "Sexo": p.sexo || "",
+          "Data de Entrada": p.data_entrada || "",
+          "Origem": p.origem || "",
+          "Nascimento": p.nascimento || "",
+          "Microchip": p.microchip || "",
+          "Anilhas": p.anilhas || "",
+          "Observações": p.observacoes || "",
+          "Data Entrada Detalhada": p.dt_entrada || "",
+          "Hora Entrada": p.hr_entrada || "",
+          "TT Tamar": p.tt_tamar || "",
+          "Recinto": p.recinto || "",
+          "Procedência": p.procedencia || "",
+          "Forma Entrada": p.forma || "",
+          "Espécie Entrada": p.esp_entrada || "",
+          "CCC": p.ccc || "",
+          "LCC": p.lcc || "",
+          "CT": p.ct || "",
+          "Peso (kg)": p.peso || "",
+          "Marcas Encontradas": p.marcas_encontradas || "",
+          "Marcas Colocadas": p.marcas_colocadas || "",
+          "Histórico": p.historico || "",
+          "Anamnese": p.anamnese || "",
+          "Reflexo Pupilar": p.ref_pupilar || "",
+          "Reflexo Palpebral": p.ref_palpebral || "",
+          "Reflexo Corneal": p.ref_corneal || "",
+          "Reflexo Doloroso": p.ref_doloroso || "",
+          "Hidratação": p.hidratacao || "",
+          "Mucosas": p.mucosas || "",
+          "Hematócrito": p.hematocrito || "",
+          "PPT": p.ppt || "",
+          "Glicemia": p.glicemia || "",
+          "FC": p.fc || "",
+          "FR": p.fr || "",
+          "Suspeita": p.suspeita || "",
+          "Proced. Médicos": p.proced_medicos || "",
+          "Data Saída": p.dt_saida || "",
+          "Hora Saída": p.hr_saida || "",
+          "Forma Saída": p.forma_saida || "",
+          "TT Saída": p.tt_saida || "",
+          "CCC Saída": p.ccc_saida || "",
+          "LCC Saída": p.lcc_saida || "",
+          "CT Saída": p.ct_saida || "",
+          "Peso Saída": p.peso_saida || "",
+          "Marcas Encontradas Saída": p.marc_encon_saida || "",
+          "Marcas Colocadas Saída": p.marc_coloc_saida || "",
+          "Praia": p.praia || "",
+          "Procedimentos": p.procedimentos || "",
+          "Parâmetros da Água": p.parametrosAgua || ""
+        };
+      });
+
+      const wb = XLSX.utils.book_new();
+      const headers = Object.keys(linhas[0] || {});
+      const ws = XLSX.utils.json_to_sheet(linhas, { header: headers });
+
+      // Ajusta largura das colunas dinamicamente
+      ws['!cols'] = headers.map(h => ({ wch: Math.max(15, h.length + 2) }));
+
+      // Formata o cabeçalho
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for(let C = range.s.c; C <= range.e.c; ++C) {
+        const cell_address = { c: C, r: 0 };
+        const cell_ref = XLSX.utils.encode_cell(cell_address);
+        if(!ws[cell_ref]) continue;
+        ws[cell_ref].s = {
+          font: { name: "Arial", bold: true, color: { rgb: "FFFFFF" } },
+          fill: { fgColor: { rgb: "00695C" } },
+          alignment: { horizontal: "center" }
+        };
+      }
+
+      XLSX.utils.book_append_sheet(wb, ws, "Prontuários");
+      XLSX.writeFile(wb,"prontuarios_tamar.xlsx");
+    });
+    }
+
+ 
+
+    window.onload = listarProntuarios;
+  </script>
+</body>
+</html>
+
+
