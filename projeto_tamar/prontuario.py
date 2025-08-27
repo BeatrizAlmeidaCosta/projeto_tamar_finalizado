@@ -2,7 +2,23 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask import Flask, send_from_directory
 import os
+
+app = Flask(__name__, static_folder='projeto_tamar')
+
+@app.route('/')
+def index():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/formulario')
+def formulario():
+    return send_from_directory(app.static_folder, 'formulario.html')
+
+@app.route('/dados')
+def dados():
+    return send_from_directory(app.static_folder, 'dados.html')
+
 
 # Caminho absoluto para o diretório do arquivo
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -62,5 +78,6 @@ def listar_prontuarios():
 # Roda localmente
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
