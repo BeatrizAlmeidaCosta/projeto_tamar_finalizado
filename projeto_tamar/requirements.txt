@@ -1,5 +1,6 @@
 Flask
 flask-cors
+Flask-SQLAlchemy
 gunicorn
 openpyxl
 pandas
